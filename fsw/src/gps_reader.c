@@ -28,7 +28,7 @@ void GPS_READER_Main(void) {
     while (CFE_ES_RunLoop(&runStatus) == TRUE) {
         nmea_zero_INFO(&gpsInfo);
 
-        int32 status = CFE_SB_RcvMsg(&msgPtr, commandPipe, CFE_SB_PEND_FOREVER);
+        int32 status = CFE_SB_RcvMsg(&msgPtr, commandPipe, 1000);
         OS_printf("GPS_READER: Got a message\n");
 
         if (status == CFE_SUCCESS) {
@@ -46,7 +46,7 @@ void GPS_READER_Main(void) {
                                     &gpsInfo);
 
         if (nmessages > 0) {
-            // OS_printf("GPS_READER: %d gps messages\n", nmessages);
+            OS_printf("GPS_READER: %d gps messages\n", nmessages);
             print_info(&gpsInfo);
         }
 
