@@ -70,6 +70,7 @@ void GPS_READER_Main(void) {
 
                 print_info(&gpsInfo);
 
+                // send the Info message
                 gpsInfoMsg.gpsInfo = gpsInfo;
                 CFE_SB_TimeStampMsg(&gpsInfoMsg);
                 CFE_SB_SendMsg(&gpsInfoMsg);
@@ -147,6 +148,4 @@ void GPS_READER_Init(void) {
     CFE_SB_InitMsg(&gpsGpgsaMsg, GPS_READER_GPS_GPGSA_MSG, sizeof(gpsGpgsaMsg), TRUE);
     CFE_SB_InitMsg(&gpsGprmcMsg, GPS_READER_GPS_GPRMC_MSG, sizeof(gpsGprmcMsg), TRUE);
     CFE_SB_InitMsg(&gpsGpvtgMsg, GPS_READER_GPS_GPVTG_MSG, sizeof(gpsGpvtgMsg), TRUE);
-
-    // CFE_SB_InitMsg(&msgPtr, SC_1HZ_WAKEUP_MID, )
 }
