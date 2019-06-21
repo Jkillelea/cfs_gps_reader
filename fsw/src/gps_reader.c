@@ -58,14 +58,16 @@ void GPS_READER_Main(void) {
         // failed to read anything
         if (nbytes < 0) {
             CFE_EVS_SendEvent(GPS_READER_ERR_LOGMSG, CFE_EVS_ERROR, 
-                "GPS_READER: No bytes read! Trying to repoen serial port %s...", 
+                "No bytes read! Trying to repoen serial port %s...", 
                 portname);
             fd = try_open(portname);
         } else {
             OS_printf("GPS_READER: Read %d bytes\n", nbytes);
             int32 nmessages = nmea_parse(&gpsParser, serialBuffer, GPS_READER_SERIAL_BUFFER_SIZE, &gpsInfo);
             if (nmessages > 0) {
-                CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "GPS_READER: %d gps messages", nmessages);
+                CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, 
+                    "%d gps messages", nmessages);
+
                 print_info(&gpsInfo);
 
                 gpsInfoMsg.gpsInfo = gpsInfo;
@@ -133,7 +135,7 @@ void GPS_READER_Init(void) {
 
     CFE_EVS_SendEvent(GPS_READER_STARTUP_INF_EID, 
                         CFE_EVS_INFORMATION, 
-                        "GPS_READER: Startup. Version %d.%d.%d.%d", 
+                        "Startup. Version %d.%d.%d.%d", 
                         GPS_READER_MAJOR_VERSION, GPS_READER_MINOR_VERSION, 
                         GPS_READER_REVISION,      GPS_READER_MISSION_REV);
 
