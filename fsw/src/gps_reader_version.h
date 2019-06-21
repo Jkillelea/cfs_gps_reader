@@ -9,15 +9,15 @@
 **
 **
 *************************************************************************/
-#ifndef _gps_reader_version_h_
-#define _gps_reader_version_h_
+#ifndef _GPS_READER_VERSION_H_
+#define _GPS_READER_VERSION_H_
 
 #define GPS_READER_MAJOR_VERSION    0
 #define GPS_READER_MINOR_VERSION    0
 #define GPS_READER_REVISION         0
 #define GPS_READER_MISSION_REV      0
       
-#endif /* _gps_reader_version_h_ */
+#endif /* _GPS_READER_VERSION_H_ */
 
 /************************/
 /*  End of File Comment */
