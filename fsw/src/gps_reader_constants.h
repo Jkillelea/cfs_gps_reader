@@ -1,5 +1,5 @@
-#ifndef _CONSTANTS_H_
-#define _CONSTANTS_H_
+#ifndef _GPS_READER_CONSTANTS_H_
+#define _GPS_READER_CONSTANTS_H_
 
 #include <termios.h>
 
@@ -13,4 +13,4 @@ extern const int PARITY;
 #define CRTSCTS  020000000000
 #endif
 
-#endif // _CONSTANTS_H_ 
+#endif // _GPS_READER_CONSTANTS_H_
