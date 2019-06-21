@@ -1,5 +1,5 @@
-#ifndef PRINT_MSGS_H_
-#define PRINT_MSGS_H_
+#ifndef _GPS_READER_PRINT_MSGS_H_
+#define _GPS_READER_PRINT_MSGS_H_
 
 // #include <stdio.h>
 #include "cfe.h"
@@ -12,4 +12,4 @@ void print_gpgsv(nmeaGPGSV *gpgsv);
 void print_gpvtg(nmeaGPVTG *gpvtg);
 void print_gprmc(nmeaGPRMC *gpvtg);
 
-#endif // PRINT_MSGS_H_
+#endif // _GPS_READER_PRINT_MSGS_H_
