@@ -9,8 +9,8 @@
 **
 **
 *************************************************************************/
-#ifndef _gps_reader_events_h_
-#define _gps_reader_events_h_
+#ifndef _GPS_READER_EVENTS_H_
+#define _GPS_READER_EVENTS_H_
 
 
 #define GPS_READER_RESERVED_EID              0
@@ -20,8 +20,9 @@
 #define GPS_READER_LEN_ERR_EID               6 
 #define GPS_READER_LOOP_LOGMSG               7
 #define GPS_READER_INFO_LOGMSG               8
+#define GPS_READER_ERR_LOGMSG                9
 
-#endif /* _gps_reader_events_h_ */
+#endif /* _GPS_READER_EVENTS_H_ */
 
 /************************/
 /*  End of File Comment */
