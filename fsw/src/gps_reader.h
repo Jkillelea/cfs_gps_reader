@@ -1,5 +1,5 @@
-#ifndef _gps_reader_h_
-#define _gps_reader_h_
+#ifndef _GPS_READER_H_
+#define _GPS_READER_H_
 
 /*
 ** Required header files.
@@ -17,6 +17,8 @@
 #include "gps_reader_events.h"
 #include "gps_reader_version.h"
 #include "gps_reader_perfids.h"
+#include "gps_reader_msgs.h"
+#include "gps_reader_msgids.h"
 
 #include "sc_msgids.h"
 
@@ -25,4 +27,4 @@
 void GPS_READER_Main(void);
 void GPS_READER_Init(void);
 
-#endif // _gps_reader_h_
+#endif // _GPS_READER_H_
