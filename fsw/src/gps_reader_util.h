@@ -1,5 +1,5 @@
-#ifndef _UTIL_H_
-#define _UTIL_H_
+#ifndef _GPS_READER_UTIL_H_
+#define _GPS_READER_UTIL_H_
 
 #include "cfe.h"
 #include <unistd.h>
@@ -22,4 +22,4 @@ int try_close(int fd);
 double decimal_minutes2decimal_decimal(const double decimal_minutes);
 size_t fill_serial_buffer(int fd, const char *serialBuffer, size_t len);
 
-#endif // _UTIL_H_
+#endif // _GPS_READER_UTIL_H_
