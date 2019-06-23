@@ -105,7 +105,7 @@ void print_gprmc(nmeaGPRMC *gprmc) {
     OS_printf("    }\n");
     OS_printf("    status      = %s\n",    &gprmc->status);
     OS_printf("    lat         = %lf %s\n", decimal_minutes2decimal_decimal(gprmc->lat), &gprmc->ns);
-    OS_printf("    lon         = %lf %s\n", decimal_minutes2decimal_decimal(gprmc->lat), &gprmc->ew);
+    OS_printf("    lon         = %lf %s\n", decimal_minutes2decimal_decimal(gprmc->lon), &gprmc->ew);
     OS_printf("    speed       = %lf\n",    gprmc->speed);
     OS_printf("    direction   = %lf\n",    gprmc->direction);
     OS_printf("    declination = %lf %s\n", gprmc->declination, &gprmc->declin_ew);
