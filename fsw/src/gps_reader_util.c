@@ -18,8 +18,15 @@ int set_serialport_params(int fd) {
         return -1;
     }
 
-    cfsetispeed(&serialport, SPEED);
-    cfsetospeed(&serialport, SPEED);
+
+    if (cfsetispeed(&serialport, SPEED) != SPEED) {
+        perror("cfsetispeed fail");
+        return -2;
+    }
+    if (cfsetospeed(&serialport, SPEED) != SPEED) {
+        perror("cfsetispeed fail");
+        return -3;
+    }
 
     serialport.c_cflag = (serialport.c_cflag & ~CSIZE) | CS8; // 8-bit chars
     // disable IGNBRK for mismatched speed tests; otherwise receive break
@@ -50,7 +57,7 @@ int set_serialport_params(int fd) {
 
     if (tcsetattr(fd, TCSANOW, &serialport) != 0) {
         perror("tcsetattr failed");
-        return -2;
+        return -4;
     }
 
     return 0;
