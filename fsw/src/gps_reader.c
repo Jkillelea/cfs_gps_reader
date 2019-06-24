@@ -49,8 +49,7 @@ void GPS_READER_Main(void) {
 
         if (status == CFE_SUCCESS) {
             CFE_SB_MsgId_t msgId = CFE_SB_GetMsgId(msgPtr);
-            int len = CFE_SB_GetTotalMsgLength(msgPtr);
-            OS_printf("GPS_READER: Got a message, id 0x%x (%d)\n", msgId, len);
+            OS_printf("GPS_READER: Got a message, id 0x%X\n", msgId);
         }
 
         // read from serial port
