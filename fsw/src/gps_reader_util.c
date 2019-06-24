@@ -1,4 +1,4 @@
-// #include "cfe.h"
+#include "cfe.h"
 #include "gps_reader_util.h"
 #include "gps_reader_constants.h"
 
@@ -8,20 +8,14 @@ int try_close(int fd) {
     return -1;
 }
 
-int try_open(const char *portname) {
+int set_serialport_params(int fd) {
     struct termios serialport;
     memset(&serialport, 0, sizeof(struct termios));
-
-    int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
-    if (fd < 0)
-        return -1;
 
     // begin gross POSIX serial port code
     if (tcgetattr(fd, &serialport) != 0) {
         perror("Failed to get attrs");
-        printf("Failed to get attrs for port %s\n", portname);
-        try_close(fd);
-        return -2;
+        return -1;
     }
 
     cfsetispeed(&serialport, SPEED);
@@ -45,7 +39,6 @@ int try_open(const char *portname) {
     serialport.c_cflag &= ~CSTOPB;
     serialport.c_cflag &= ~CRTSCTS; // vs code doesn't find this one flag? still compiles.
 
-
     // From the manpages. Sets it to raw mode. Otherwise linux can postprocess
     // the \r\n into \n\n and the parser fails
     serialport.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -57,11 +50,20 @@ int try_open(const char *portname) {
 
     if (tcsetattr(fd, TCSANOW, &serialport) != 0) {
         perror("tcsetattr failed");
-        printf("error %d from tcsetattr", errno);
-        try_close(fd);
-        return -3;
+        return -2;
     }
 
+    return 0;
+}
+
+int try_open(const char *portname) {
+    int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
+    if (fd < 0)
+        return -1;
+
+    if (set_serialport_params(fd) < 0) {
+        return -2;
+    }
     return fd;
 }
 
@@ -74,38 +76,14 @@ double decimal_minutes2decimal_decimal(const double decimal_minutes) {
     return (degrees + decimal);                       // DDD.dddddd
 }
 
-ssize_t find_string_start(const char *buf, const char *substr, size_t buf_size, size_t substr_size) {
-    ssize_t buffoff = 0;
-    bool found = true;
-    while (strncmp(substr, buf+buffoff, substr_size) != 0) {
-        buffoff += 1;
-        if (buffoff > buf_size - 1) {
-            found = false;
-            break;
-        }
-    }
-
-    if (found)
-        return buffoff;
-    return -1;
-}
-
-ssize_t find_last_crlf(const char *buf, size_t buf_size) {
-    // start at the end of the string
-    for (size_t i = buf_size - 2; i > 0; i--) {
-        if (buf[i] == '\r' && buf[i+1] == '\n')
-            return i;
-    }
-    return -1;
-}
-
-size_t fill_serial_buffer(int fd, const char *serialBuffer, size_t len) {
-        // read until buffer is full
-        size_t recieved_bytes = 0;
+// read until buffer is full
+size_t fill_serial_buffer(int fd, char *serialBuffer, size_t len) {
+        size_t recieved_bytes = 0; // total bytes read
         while(recieved_bytes < len) {
             size_t nbytes_read = read(fd,
-                                    serialBuffer + recieved_bytes, 
-                                    len - recieved_bytes);
+                                    serialBuffer + recieved_bytes, // pointer plus offset
+                                    len - recieved_bytes);         // buffer length remaining
+
             recieved_bytes += nbytes_read;
 
             if (nbytes_read == 0) { // failed to read anything?
