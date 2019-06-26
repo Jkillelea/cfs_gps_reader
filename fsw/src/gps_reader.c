@@ -9,18 +9,23 @@
 #include "gps_reader_msgids.h"
 #include "nmea/nmea.h"
 
+/* NMEA message buffer */
+char serialBuffer[GPS_READER_SERIAL_BUFFER_SIZE];
+
+/* NMEA message parser */
 nmeaPARSER gpsParser;
 
-CFE_SB_PipeId_t commandPipe;
-CFE_SB_MsgPtr_t msgPtr;
+/* Software Bus Objects */
+CFE_SB_PipeId_t rcvPipe;
+CFE_SB_MsgPtr_t rcvMsgPtr;
 
+/* Software Bus Messages */
 GpsInfoMsg_t  gpsInfoMsg;
 GpsGpggaMsg_t gpsGpggaMsg;
 GpsGpgsaMsg_t gpsGpgsaMsg;
 GpsGprmcMsg_t gpsGprmcMsg;
 GpsGpvtgMsg_t gpsGpvtgMsg;
 
-char serialBuffer[GPS_READER_SERIAL_BUFFER_SIZE];
 
 void GPS_READER_Main(void) {
     uint32 runStatus = CFE_ES_APP_RUN;
@@ -29,6 +34,7 @@ void GPS_READER_Main(void) {
 
     GPS_READER_Init();
 
+    /* Try and open the serial port */
     int32 fd = try_open(portname);
     if (fd < 0) {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_ERROR,
@@ -36,6 +42,7 @@ void GPS_READER_Main(void) {
     }
 
     while (CFE_ES_RunLoop(&runStatus) == TRUE) {
+        /* Init objects for this loop */
         memset(serialBuffer, 0, GPS_READER_SERIAL_BUFFER_SIZE);
         nmea_zero_INFO(&gpsInfoMsg.gpsInfo);
         nmea_zero_GPGGA(&gpsGpggaMsg.gpsGpgga);
@@ -45,19 +52,21 @@ void GPS_READER_Main(void) {
 
         CFE_ES_PerfLogExit(GPS_READER_PERF_ID);
 
-        int32 status = CFE_SB_RcvMsg(&msgPtr, commandPipe, 1000);
+        /* Wait on the 1Hz message (the timeout is 1 sec anyway) */
+        int32 status = CFE_SB_RcvMsg(&rcvMsgPtr, rcvPipe, 1000);
 
         CFE_ES_PerfLogEntry(GPS_READER_PERF_ID);
 
         if (status == CFE_SUCCESS) {
-            CFE_SB_MsgId_t msgId = CFE_SB_GetMsgId(msgPtr);
-            OS_printf("GPS_READER: Got a message, id 0x%X\n", msgId);
+            CFE_SB_MsgId_t msgId = CFE_SB_GetMsgId(rcvMsgPtr);
+            CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
+                              "GPS_READER: Got a message, id 0x%X", msgId);
         }
 
-        // read from serial port
+        /* Read from serial port */
         int32 nbytes = fill_serial_buffer(fd, serialBuffer, GPS_READER_SERIAL_BUFFER_SIZE);
 
-        // failed to read anything
+        /* Failed to read anything -> skip further processing this loop */
         if (nbytes < 0) {
             CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_ERROR,
                 "No bytes read! Trying to repoen serial port %s...",
@@ -69,12 +78,14 @@ void GPS_READER_Main(void) {
         CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
                             "Read %d bytes", nbytes);
 
+        /* Parse input from serial port */
         int32 nmessages = nmea_parse(&gpsParser,
                                      serialBuffer,
                                      GPS_READER_SERIAL_BUFFER_SIZE,
                                      &gpsInfoMsg.gpsInfo);
+
+        /* No messages found in buffer -> skip further processing */
         if (nmessages < 0) {
-            // nothing read
             CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_ERROR,
                             "No NMEA GPS messages parsed!");
             continue;
@@ -83,15 +94,15 @@ void GPS_READER_Main(void) {
         // OS_printf("%s\n", serialBuffer);
 
         CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
-            "%d gps messages", nmessages);
+                          "%d gps messages", nmessages);
 
 
-        // send the Info message
+        /* A nmeaINFO messages is always created if any message is parsed */
         CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have info");
         CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsInfoMsg);
         CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsInfoMsg);
 
-        // check which messages were recieved
+        /* Check which other messages were recieved */
         if (gpsInfoMsg.gpsInfo.smask & GPGGA) {
             CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpgga");
             nmea_info2GPGGA(&gpsInfoMsg.gpsInfo, &gpsGpggaMsg.gpsGpgga);
@@ -136,19 +147,25 @@ void GPS_READER_Main(void) {
 }
 
 void GPS_READER_Init(void) {
+    /* Initialize the EVS and ES */
     CFE_ES_RegisterApp();
     CFE_EVS_Register(NULL, 0, CFE_EVS_BINARY_FILTER);
 
+    /* Announce that the process is alive */
     CFE_EVS_SendEvent(GPS_READER_STARTUP_INF_EID, CFE_EVS_INFORMATION,
                         "Startup. Version %d.%d.%d.%d",
                         GPS_READER_MAJOR_VERSION, GPS_READER_MINOR_VERSION,
                         GPS_READER_REVISION,      GPS_READER_MISSION_REV);
 
-    CFE_SB_CreatePipe(&commandPipe, 10, "GPS_READER_PIPE");
-    CFE_SB_Subscribe(SC_1HZ_WAKEUP_MID, commandPipe);
+    /* Input pipe */
+    CFE_SB_CreatePipe(&rcvPipe, 10, "GPS_READER_PIPE");
+    /* 1 Hz message for the process tick rate */
+    CFE_SB_Subscribe(SC_1HZ_WAKEUP_MID, rcvPipe);
 
+    /* Parser */
     nmea_parser_init(&gpsParser);
 
+    /* Messages */
     CFE_SB_InitMsg(&gpsInfoMsg,  GPS_READER_GPS_INFO_MSG,  sizeof(gpsInfoMsg),  TRUE);
     CFE_SB_InitMsg(&gpsGpggaMsg, GPS_READER_GPS_GPGGA_MSG, sizeof(gpsGpggaMsg), TRUE);
     CFE_SB_InitMsg(&gpsGpgsaMsg, GPS_READER_GPS_GPGSA_MSG, sizeof(gpsGpgsaMsg), TRUE);
