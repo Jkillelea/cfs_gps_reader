@@ -31,10 +31,9 @@ void GPS_READER_Main(void) {
 
     int32 fd = try_open(portname);
     if (fd < 0) {
-        OS_printf("GPS_READER: Failed to open serial port %s\n", portname);
+        CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_ERROR,
+                        "Failed to open serial port %s", portname);
     }
-
-    nmea_parser_init(&gpsParser);
 
     while (CFE_ES_RunLoop(&runStatus) == TRUE) {
         memset(serialBuffer, 0, GPS_READER_SERIAL_BUFFER_SIZE);
@@ -64,6 +63,7 @@ void GPS_READER_Main(void) {
                 "No bytes read! Trying to repoen serial port %s...",
                 portname);
             fd = try_open(portname);
+            continue;
         } else {
             CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "Read %d bytes", nbytes);
             int32 nmessages = nmea_parse(&gpsParser,
@@ -91,6 +91,7 @@ void GPS_READER_Main(void) {
                     CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpggaMsg);
                     // print_gpgga(&gpsGpggaMsg.gpsGpgga);
                 }
+
                 if (gpsInfoMsg.gpsInfo.smask & GPGSA) {
                     CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpgsa");
                     nmea_info2GPGSA(&gpsInfoMsg.gpsInfo, &gpsGpgsaMsg.gpsGpgsa);
@@ -98,6 +99,7 @@ void GPS_READER_Main(void) {
                     CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpgsaMsg);
                     // print_gpgsa(&gpsGpgsaMsg.gpsGpgsa);
                 }
+
                 // currently breaking without a link to libmath
                 // if (gpsInfoMsg.gpsInfo.smask & GPGSV) {
                 //     nmeaGPGSV gpgsv;
@@ -105,6 +107,7 @@ void GPS_READER_Main(void) {
                 //     nmea_info2GPGSV(&gpsInfo, &gpgsv, 0);
                 //     print_gpgsv(&gpgsv);
                 // }
+
                 if (gpsInfoMsg.gpsInfo.smask & GPRMC) {
                     CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gprmc");
                     nmea_info2GPRMC(&gpsInfoMsg.gpsInfo, &gpsGprmcMsg.gpsGprmc);
@@ -112,6 +115,7 @@ void GPS_READER_Main(void) {
                     CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGprmcMsg);
                     // print_gprmc(&gpsGprmcMsg.gpsGprmc);
                 }
+
                 if (gpsInfoMsg.gpsInfo.smask & GPVTG) {
                     CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpvtg");
                     nmea_info2GPVTG(&gpsInfoMsg.gpsInfo, &gpsGpvtgMsg.gpsGpvtg);
@@ -122,21 +126,21 @@ void GPS_READER_Main(void) {
             }
         }
     }
-
 }
 
 void GPS_READER_Init(void) {
     CFE_ES_RegisterApp();
     CFE_EVS_Register(NULL, 0, CFE_EVS_BINARY_FILTER);
 
-    CFE_EVS_SendEvent(GPS_READER_STARTUP_INF_EID,
-                        CFE_EVS_INFORMATION,
+    CFE_EVS_SendEvent(GPS_READER_STARTUP_INF_EID, CFE_EVS_INFORMATION,
                         "Startup. Version %d.%d.%d.%d",
                         GPS_READER_MAJOR_VERSION, GPS_READER_MINOR_VERSION,
                         GPS_READER_REVISION,      GPS_READER_MISSION_REV);
 
     CFE_SB_CreatePipe(&commandPipe, 10, "GPS_READER_PIPE");
     CFE_SB_Subscribe(SC_1HZ_WAKEUP_MID, commandPipe);
+
+    nmea_parser_init(&gpsParser);
 
     CFE_SB_InitMsg(&gpsInfoMsg,  GPS_READER_GPS_INFO_MSG,  sizeof(gpsInfoMsg),  TRUE);
     CFE_SB_InitMsg(&gpsGpggaMsg, GPS_READER_GPS_GPGGA_MSG, sizeof(gpsGpggaMsg), TRUE);
