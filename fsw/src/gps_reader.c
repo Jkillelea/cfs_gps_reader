@@ -9,6 +9,8 @@
 #include "gps_reader_msgids.h"
 #include "nmea/nmea.h"
 
+nmeaPARSER gpsParser;
+
 CFE_SB_PipeId_t commandPipe;
 CFE_SB_MsgPtr_t msgPtr;
 
@@ -32,20 +34,21 @@ void GPS_READER_Main(void) {
         OS_printf("GPS_READER: Failed to open serial port %s\n", portname);
     }
 
-    nmeaPARSER gpsParser;
-    nmeaINFO   gpsInfo;
     nmea_parser_init(&gpsParser);
 
     while (CFE_ES_RunLoop(&runStatus) == TRUE) {
         memset(serialBuffer, 0, GPS_READER_SERIAL_BUFFER_SIZE);
-        nmea_zero_INFO(&gpsInfo);
         nmea_zero_INFO(&gpsInfoMsg.gpsInfo);
         nmea_zero_GPGGA(&gpsGpggaMsg.gpsGpgga);
         nmea_zero_GPGSA(&gpsGpgsaMsg.gpsGpgsa);
         nmea_zero_GPRMC(&gpsGprmcMsg.gpsGprmc);
         nmea_zero_GPVTG(&gpsGpvtgMsg.gpsGpvtg);
 
+        CFE_ES_PerfLogExit(GPS_READER_PERF_ID);
+
         int32 status = CFE_SB_RcvMsg(&msgPtr, commandPipe, 1000);
+
+        CFE_ES_PerfLogEntry(GPS_READER_PERF_ID);
 
         if (status == CFE_SUCCESS) {
             CFE_SB_MsgId_t msgId = CFE_SB_GetMsgId(msgPtr);
@@ -63,7 +66,10 @@ void GPS_READER_Main(void) {
             fd = try_open(portname);
         } else {
             CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "Read %d bytes", nbytes);
-            int32 nmessages = nmea_parse(&gpsParser, serialBuffer, GPS_READER_SERIAL_BUFFER_SIZE, &gpsInfo);
+            int32 nmessages = nmea_parse(&gpsParser,
+                                         serialBuffer,
+                                         GPS_READER_SERIAL_BUFFER_SIZE,
+                                         &gpsInfoMsg.gpsInfo);
             if (nmessages > 0) {
 
                 // OS_printf("%s\n", serialBuffer);
@@ -71,51 +77,44 @@ void GPS_READER_Main(void) {
                 CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
                     "%d gps messages", nmessages);
 
-                // print_info(&gpsInfo);
 
                 // send the Info message
-                CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "sending info");
+                CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have info");
                 CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsInfoMsg);
-                gpsInfoMsg.gpsInfo = gpsInfo;
                 CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsInfoMsg);
 
                 // check which messages were recieved
-                if (gpsInfo.smask & GPGGA) {
-                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "sending gpgga");
-                    nmea_zero_GPGGA(&gpsGpggaMsg.gpsGpgga);
-                    nmea_info2GPGGA(&gpsInfo, &gpsGpggaMsg.gpsGpgga);
+                if (gpsInfoMsg.gpsInfo.smask & GPGGA) {
+                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpgga");
+                    nmea_info2GPGGA(&gpsInfoMsg.gpsInfo, &gpsGpggaMsg.gpsGpgga);
                     CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGpggaMsg);
                     CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpggaMsg);
                     // print_gpgga(&gpsGpggaMsg.gpsGpgga);
                 }
-                if (gpsInfo.smask & GPGSA) {
-                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "sending gpgsa");
-                    nmea_zero_GPGSA(&gpsGpgsaMsg.gpsGpgsa);
-                    nmea_info2GPGSA(&gpsInfo, &gpsGpgsaMsg.gpsGpgsa);
+                if (gpsInfoMsg.gpsInfo.smask & GPGSA) {
+                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpgsa");
+                    nmea_info2GPGSA(&gpsInfoMsg.gpsInfo, &gpsGpgsaMsg.gpsGpgsa);
                     CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGpgsaMsg);
                     CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpgsaMsg);
                     // print_gpgsa(&gpsGpgsaMsg.gpsGpgsa);
                 }
                 // currently breaking without a link to libmath
-                // if (gpsInfo.smask & GPGSV) {
+                // if (gpsInfoMsg.gpsInfo.smask & GPGSV) {
                 //     nmeaGPGSV gpgsv;
-                //     CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "sending gpgsv");
-                //     nmea_zero_GPGSV(&gpgsv);
+                //     CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpgsv");
                 //     nmea_info2GPGSV(&gpsInfo, &gpgsv, 0);
                 //     print_gpgsv(&gpgsv);
                 // }
-                if (gpsInfo.smask & GPRMC) {
-                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "sending gprmc");
-                    nmea_zero_GPRMC(&gpsGprmcMsg.gpsGprmc);
-                    nmea_info2GPRMC(&gpsInfo, &gpsGprmcMsg.gpsGprmc);
+                if (gpsInfoMsg.gpsInfo.smask & GPRMC) {
+                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gprmc");
+                    nmea_info2GPRMC(&gpsInfoMsg.gpsInfo, &gpsGprmcMsg.gpsGprmc);
                     CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGprmcMsg);
                     CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGprmcMsg);
                     // print_gprmc(&gpsGprmcMsg.gpsGprmc);
                 }
-                if (gpsInfo.smask & GPVTG) {
-                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "sending gpvtg");
-                    nmea_zero_GPVTG(&gpsGpvtgMsg.gpsGpvtg);
-                    nmea_info2GPVTG(&gpsInfo, &gpsGpvtgMsg.gpsGpvtg);
+                if (gpsInfoMsg.gpsInfo.smask & GPVTG) {
+                    CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpvtg");
+                    nmea_info2GPVTG(&gpsInfoMsg.gpsInfo, &gpsGpvtgMsg.gpsGpvtg);
                     CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGpvtgMsg);
                     CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpvtgMsg);
                     // print_gpvtg(&gpvtg);
