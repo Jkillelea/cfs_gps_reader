@@ -19,11 +19,10 @@ typedef struct {
     nmeaGPGSA gpsGpgsa;
 } GpsGpgsaMsg_t;
 
-// TODO: not linking against libmath properly, nmea_info2GPGSV fails
-// typedef struct {
-//     uint8 tlmHeader[CFE_SB_TLM_HDR_SIZE];
-//     nmeaGPGSV gpsGpgsv;
-// } GpsGpgsvMsg_t;
+typedef struct {
+    uint8 tlmHeader[CFE_SB_TLM_HDR_SIZE];
+    nmeaGPGSV gpsGpgsv;
+} GpsGpgsvMsg_t;
 
 typedef struct {
     uint8 tlmHeader[CFE_SB_TLM_HDR_SIZE];
