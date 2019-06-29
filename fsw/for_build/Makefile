@@ -51,7 +51,7 @@ EXEDIR=../exe
 ## entry like the following:
 ##  -R../tst_lib/tst_lib.elf
 ##
-SHARED_LIB_LINK = 
+SHARED_LIB_LINK = -lm
 
 ########################################################################
 # Should not have to change below this line, except for customized 
