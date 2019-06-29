@@ -1,7 +1,6 @@
 #include "gps_reader.h"
 #include "gps_reader_constants.h"
 #include "gps_reader_util.h"
-#include "gps_print_msgs.h"
 #include "gps_reader_events.h"
 #include "gps_reader_version.h"
 #include "gps_reader_perfids.h"
@@ -23,6 +22,7 @@ CFE_SB_MsgPtr_t rcvMsgPtr;
 GpsInfoMsg_t  gpsInfoMsg;
 GpsGpggaMsg_t gpsGpggaMsg;
 GpsGpgsaMsg_t gpsGpgsaMsg;
+GpsGpgsvMsg_t gpsGpgsvMsg;
 GpsGprmcMsg_t gpsGprmcMsg;
 GpsGpvtgMsg_t gpsGpvtgMsg;
 
@@ -47,6 +47,7 @@ void GPS_READER_Main(void) {
         nmea_zero_INFO(&gpsInfoMsg.gpsInfo);
         nmea_zero_GPGGA(&gpsGpggaMsg.gpsGpgga);
         nmea_zero_GPGSA(&gpsGpgsaMsg.gpsGpgsa);
+        nmea_zero_GPGSV(&gpsGpgsvMsg.gpsGpgsv);
         nmea_zero_GPRMC(&gpsGprmcMsg.gpsGprmc);
         nmea_zero_GPVTG(&gpsGpvtgMsg.gpsGpvtg);
 
@@ -108,7 +109,6 @@ void GPS_READER_Main(void) {
             nmea_info2GPGGA(&gpsInfoMsg.gpsInfo, &gpsGpggaMsg.gpsGpgga);
             CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGpggaMsg);
             CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpggaMsg);
-            // print_gpgga(&gpsGpggaMsg.gpsGpgga);
         }
 
         if (gpsInfoMsg.gpsInfo.smask & GPGSA) {
@@ -116,23 +116,19 @@ void GPS_READER_Main(void) {
             nmea_info2GPGSA(&gpsInfoMsg.gpsInfo, &gpsGpgsaMsg.gpsGpgsa);
             CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGpgsaMsg);
             CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpgsaMsg);
-            // print_gpgsa(&gpsGpgsaMsg.gpsGpgsa);
         }
 
-        // currently breaking without a link to libmath
-        // if (gpsInfoMsg.gpsInfo.smask & GPGSV) {
-        //     nmeaGPGSV gpgsv;
-        //     CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpgsv");
-        //     nmea_info2GPGSV(&gpsInfo, &gpgsv, 0);
-        //     print_gpgsv(&gpgsv);
-        // }
+        if (gpsInfoMsg.gpsInfo.smask & GPGSV) {
+            CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gpgsv");
+            nmea_info2GPGSV(&gpsInfoMsg.gpsInfo, &gpsGpgsvMsg.gpsGpgsv, 0);
+            CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpgsvMsg);
+        }
 
         if (gpsInfoMsg.gpsInfo.smask & GPRMC) {
             CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION, "have gprmc");
             nmea_info2GPRMC(&gpsInfoMsg.gpsInfo, &gpsGprmcMsg.gpsGprmc);
             CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGprmcMsg);
             CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGprmcMsg);
-            // print_gprmc(&gpsGprmcMsg.gpsGprmc);
         }
 
         if (gpsInfoMsg.gpsInfo.smask & GPVTG) {
@@ -140,7 +136,6 @@ void GPS_READER_Main(void) {
             nmea_info2GPVTG(&gpsInfoMsg.gpsInfo, &gpsGpvtgMsg.gpsGpvtg);
             CFE_SB_TimeStampMsg((CFE_SB_MsgPtr_t) &gpsGpvtgMsg);
             CFE_SB_SendMsg((CFE_SB_MsgPtr_t) &gpsGpvtgMsg);
-            // print_gpvtg(&gpvtg);
         }
 
     }
@@ -169,6 +164,7 @@ void GPS_READER_Init(void) {
     CFE_SB_InitMsg(&gpsInfoMsg,  GPS_READER_GPS_INFO_MSG,  sizeof(gpsInfoMsg),  TRUE);
     CFE_SB_InitMsg(&gpsGpggaMsg, GPS_READER_GPS_GPGGA_MSG, sizeof(gpsGpggaMsg), TRUE);
     CFE_SB_InitMsg(&gpsGpgsaMsg, GPS_READER_GPS_GPGSA_MSG, sizeof(gpsGpgsaMsg), TRUE);
+    CFE_SB_InitMsg(&gpsGpgsvMsg, GPS_READER_GPS_GPGSV_MSG, sizeof(gpsGpgsvMsg), TRUE);
     CFE_SB_InitMsg(&gpsGprmcMsg, GPS_READER_GPS_GPRMC_MSG, sizeof(gpsGprmcMsg), TRUE);
     CFE_SB_InitMsg(&gpsGpvtgMsg, GPS_READER_GPS_GPVTG_MSG, sizeof(gpsGpvtgMsg), TRUE);
 }
