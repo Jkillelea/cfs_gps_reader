@@ -1,6 +1,6 @@
 #include "cfe.h"
 #include "gps_reader_util.h"
-#include "gps_reader_constants.h"
+#include "gps_reader_platform_cfg.h"
 
 int try_close(int fd) {
     if (fd > 0)
@@ -89,7 +89,7 @@ size_t fill_serial_buffer(int fd, char *serialBuffer, size_t len) {
             if (nbytes_read == 0) { // failed to read anything?
                 OS_printf("Failed to read from fd (0 bytes).");
                 try_close(fd);
-                fd = try_open(portname);
+                fd = try_open(SERIAL_PORT_NAME);
                 if (fd < 0) {
                     perror("Failed to reopen fd.");
                 }

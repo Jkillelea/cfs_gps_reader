@@ -1,5 +1,5 @@
 #include "gps_reader.h"
-#include "gps_reader_constants.h"
+#include "gps_reader_platform_cfg.h"
 #include "gps_reader_util.h"
 #include "gps_reader_events.h"
 #include "gps_reader_version.h"
@@ -35,10 +35,10 @@ void GPS_READER_Main(void) {
     GPS_READER_Init();
 
     /* Try and open the serial port */
-    int32 fd = try_open(portname);
+    int32 fd = try_open(SERIAL_PORT_NAME);
     if (fd < 0) {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_ERROR,
-                        "Failed to open serial port %s", portname);
+                        "Failed to open serial port %s", SERIAL_PORT_NAME);
     }
 
     while (CFE_ES_RunLoop(&runStatus) == TRUE) {
@@ -71,8 +71,8 @@ void GPS_READER_Main(void) {
         if (nbytes < 0) {
             CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_ERROR,
                 "No bytes read! Trying to repoen serial port %s...",
-                portname);
-            fd = try_open(portname);
+                SERIAL_PORT_NAME);
+            fd = try_open(SERIAL_PORT_NAME);
             continue;
         }
 

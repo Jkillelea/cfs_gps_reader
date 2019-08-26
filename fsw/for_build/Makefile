@@ -21,7 +21,7 @@ ENTRY_PT = GPS_READER_Main
 #
 # Object files required to build subsystem.
 #
-OBJS = gps_reader.o gps_reader_constants.o gps_reader_util.o \
+OBJS = gps_reader.o gps_reader_util.o \
 	   context.o generate.o generator.o gmath.o \
 	   info.o parse.o parser.o sentence.o time.o tok.o
 
