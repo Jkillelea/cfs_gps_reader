@@ -1,12 +1,4 @@
 #include "gps_reader.h"
-#include "gps_reader_platform_cfg.h"
-#include "gps_reader_util.h"
-#include "gps_reader_events.h"
-#include "gps_reader_version.h"
-#include "gps_reader_perfids.h"
-#include "gps_reader_msgs.h"
-#include "gps_reader_msgids.h"
-#include "nmea/nmea.h"
 
 /* NMEA message buffer */
 char serialBuffer[GPS_READER_SERIAL_BUFFER_SIZE];

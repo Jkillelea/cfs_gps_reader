@@ -19,10 +19,11 @@
 #include "gps_reader_perfids.h"
 #include "gps_reader_msgs.h"
 #include "gps_reader_msgids.h"
+#include "gps_reader_platform_cfg.h"
+#include "gps_reader_util.h"
+#include "nmea/nmea.h"
 
 #include "sc_msgids.h"
-
-#define GPS_READER_SERIAL_BUFFER_SIZE (512)
 
 void GPS_READER_Main(void);
 void GPS_READER_Init(void);
