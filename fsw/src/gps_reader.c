@@ -68,8 +68,8 @@ void GPS_READER_Main(void) {
             continue;
         }
 
-        CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
-                            "Read %d bytes", nbytes);
+        // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
+        //                     "Read %d bytes", nbytes);
 
         /* Parse input from serial port */
         int32 nmessages = nmea_parse(&gpsParser,
@@ -88,6 +88,11 @@ void GPS_READER_Main(void) {
 
         CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
                           "%d gps messages", nmessages);
+
+        CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_INFORMATION,
+                          "%d/%d sats inuse/inview",
+                          gpsInfoMsg.gpsInfo.satinfo.inuse,
+                          gpsInfoMsg.gpsInfo.satinfo.inview);
 
 
         /* A nmeaINFO messages is always created if any message is parsed */
