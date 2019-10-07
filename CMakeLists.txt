@@ -7,7 +7,6 @@ include_directories(${sc_MISSION_DIR}/fsw/platform_inc)
 include_directories(${libnmea_MISSION_DIR}/include)
 
 aux_source_directory(fsw/src APP_SRC_FILES)
-aux_source_directory(fsw/src/libnmea/src APP_SRC_FILES)
 
 # Create the app module
 add_cfe_app(gps_reader ${APP_SRC_FILES})
