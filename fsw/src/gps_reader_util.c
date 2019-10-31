@@ -37,7 +37,7 @@ int set_serialport_params(int fd) {
     serialport.c_cflag &= ~(PARENB | PARODD);      // shut off parity
     serialport.c_cflag |=  PARITY;
     serialport.c_cflag &= ~CSTOPB;
-    serialport.c_cflag &= ~CRTSCTS; // vs code doesn't find this one flag? still compiles.
+    // serialport.c_cflag &= ~CRTSCTS; // vs code doesn't find this one flag? still compiles.
 
     // From the manpages. Sets it to raw mode. Otherwise linux can postprocess
     // the \r\n into \n\n and the parser fails
