@@ -1,3 +1,0 @@
-[submodule "fsw/src/libnmea"]
-	path = fsw/src/libnmea
-	url = https://github.com/Jkillelea/nmealib-fork
