@@ -11,12 +11,12 @@ CFE_SB_PipeId_t rcvPipe;
 CFE_SB_MsgPtr_t rcvMsgPtr;
 
 /* Software Bus Messages */
-GpsInfoMsg_t  gpsInfoMsg;
-GpsGpggaMsg_t gpsGpggaMsg;
-GpsGpgsaMsg_t gpsGpgsaMsg;
-GpsGpgsvMsg_t gpsGpgsvMsg;
-GpsGprmcMsg_t gpsGprmcMsg;
-GpsGpvtgMsg_t gpsGpvtgMsg;
+static GpsInfoMsg_t  gpsInfoMsg;
+static GpsGpggaMsg_t gpsGpggaMsg;
+static GpsGpgsaMsg_t gpsGpgsaMsg;
+static GpsGpgsvMsg_t gpsGpgsvMsg;
+static GpsGprmcMsg_t gpsGprmcMsg;
+static GpsGpvtgMsg_t gpsGpvtgMsg;
 
 
 void GPS_READER_Main(void) {
@@ -152,7 +152,7 @@ void GPS_READER_Init(void) {
     /* Input pipe */
     CFE_SB_CreatePipe(&rcvPipe, 10, "GPS_READER_PIPE");
     /* 1 Hz message for the process tick rate */
-    CFE_SB_Subscribe(SC_1HZ_WAKEUP_MID, rcvPipe);
+    CFE_SB_Subscribe(GPS_READER_WAKEUP_MID, rcvPipe);
 
     /* Parser */
     nmea_parser_init(&gpsParser);

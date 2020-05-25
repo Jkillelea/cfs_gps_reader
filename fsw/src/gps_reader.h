@@ -23,8 +23,6 @@
 #include "gps_reader_util.h"
 #include "nmea/nmea.h"
 
-#include "sc_msgids.h"
-
 void GPS_READER_Main(void);
 void GPS_READER_Init(void);
 
