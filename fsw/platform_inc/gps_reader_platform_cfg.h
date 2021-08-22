@@ -4,7 +4,7 @@
 #include <termios.h>
 
 #ifdef __arm__ // raspberry pi
-#define SERIAL_PORT_NAME "/dev/serial0"
+#define SERIAL_PORT_NAME "/dev/ttyS0"
 #else // x86 with usb adaptor
 #define SERIAL_PORT_NAME "/dev/ttyUSB0"
 #endif
@@ -13,11 +13,11 @@
  * Smaller buffers cause GPS_READER messages to be 
  * generated more frequently instead of in bursts
  *
-#define GPS_READER_SERIAL_BUFFER_SIZE (128)
-#define GPS_READER_SERIAL_BUFFER_SIZE (256)
-#define GPS_READER_SERIAL_BUFFER_SIZE (512)
 */
-#define GPS_READER_SERIAL_BUFFER_SIZE (256)
+#define GPS_READER_SERIAL_BUFFER_SIZE (128)
+// #define GPS_READER_SERIAL_BUFFER_SIZE (256)
+// #define GPS_READER_SERIAL_BUFFER_SIZE (512)
+
 #define SPEED (B9600)
 #define PARITY (0)
 

@@ -23,7 +23,31 @@
 #include "gps_reader_util.h"
 #include "nmea/nmea.h"
 
+struct {
+
+    int serialFd;
+
+    /* NMEA message parser */
+    nmeaPARSER gpsParser;
+    /* NMEA message buffer */
+    char serialBuffer[GPS_READER_SERIAL_BUFFER_SIZE];
+
+    /* Software Bus Objects */
+    CFE_SB_PipeId_t rcvPipe;
+    CFE_SB_Buffer_t *rcvMsgPtr;
+
+    /* Software Bus Messages */
+    GpsInfoMsg_t  gpsInfoMsg;
+    GpsGpggaMsg_t gpsGpggaMsg;
+    GpsGpgsaMsg_t gpsGpgsaMsg;
+    GpsGpgsvMsg_t gpsGpgsvMsg;
+    GpsGprmcMsg_t gpsGprmcMsg;
+    GpsGpvtgMsg_t gpsGpvtgMsg;
+
+} g_GPS_READER_Data;
+
 void GPS_READER_AppMain(void);
-void GPS_READER_Init(void);
+CFE_Status_t GPS_READER_Init(void);
+CFE_Status_t GPS_READER_RcvMsg(void);
 
 #endif // _GPS_READER_H_
