@@ -6,7 +6,7 @@
 #include "cfe_sb.h"
 #include "cfe_evs.h"
 #include "cfe_time.h"
-
+#include "gps_reader_serial.h"
 
 CFE_Status_t GPS_READER_RcvMsg(void)
 {
@@ -43,7 +43,7 @@ CFE_Status_t GPS_READER_RcvMsg(void)
     }
 
     /* Read from serial port */
-    int32 nbytes = fill_serial_buffer(g_GPS_READER_Data.serialFd, g_GPS_READER_Data.serialBuffer, GPS_READER_SERIAL_BUFFER_SIZE);
+    int32 nbytes = GPS_READER_ReadSerial(g_GPS_READER_Data.serialFd, g_GPS_READER_Data.serialBuffer, GPS_READER_SERIAL_BUFFER_SIZE);
     // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "Read %d bytes", nbytes);
 
     /* Failed to read anything -> skip further processing this loop */
@@ -52,7 +52,7 @@ CFE_Status_t GPS_READER_RcvMsg(void)
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR,
                 "No bytes read! Trying to repoen serial port %s...",
                 SERIAL_PORT_NAME);
-        g_GPS_READER_Data.serialFd = try_open(SERIAL_PORT_NAME);
+        g_GPS_READER_Data.serialFd = GPS_READER_OpenPort(SERIAL_PORT_NAME);
     }
     else
     {
@@ -205,7 +205,7 @@ CFE_Status_t GPS_READER_Init(void)
     }
 
     /* Try and open the serial port */
-    g_GPS_READER_Data.serialFd = try_open(SERIAL_PORT_NAME);
+    g_GPS_READER_Data.serialFd = GPS_READER_OpenPort(SERIAL_PORT_NAME);
     if (g_GPS_READER_Data.serialFd < 0)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR,
