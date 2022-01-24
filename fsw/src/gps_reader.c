@@ -34,7 +34,7 @@ CFE_Status_t GPS_READER_RcvMsg(void)
         CFE_SB_MsgId_t msgId = 0;
         if (CFE_MSG_GetMsgId(&g_GPS_READER_Data.rcvMsgPtr->Msg, &msgId) == CFE_SUCCESS)
         {
-            // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "GPS_READER: Got a message, id 0x%X", msgId);
+            // CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG, "GPS_READER: Got a message, id 0x%X", msgId);
         }
         else
         {
@@ -44,7 +44,6 @@ CFE_Status_t GPS_READER_RcvMsg(void)
 
     /* Read from serial port */
     int32 nbytes = GPS_READER_ReadSerial(g_GPS_READER_Data.serialFd, g_GPS_READER_Data.serialBuffer, GPS_READER_SERIAL_BUFFER_SIZE);
-    // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "Read %d bytes", nbytes);
 
     /* Failed to read anything -> skip further processing this loop */
     if (nbytes < 0)
@@ -67,24 +66,24 @@ CFE_Status_t GPS_READER_RcvMsg(void)
                     "No NMEA GPS messages parsed!");
         }
 
-        CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_INFORMATION,
+        CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG,
                 "%d gps messages", nmessages);
 
-        CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_INFORMATION,
+        CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG,
                 "%d/%d sats inuse/inview",
                 g_GPS_READER_Data.gpsInfoMsg.gpsInfo.satinfo.inuse,
                 g_GPS_READER_Data.gpsInfoMsg.gpsInfo.satinfo.inview);
 
 
         /* A nmeaINFO messages is always created if any message is parsed */
-        // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "have info");
+        CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG, "have info");
         CFE_SB_TimeStampMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsInfoMsg);
         CFE_SB_TransmitMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsInfoMsg, true);
 
         /* Check which other messages were recieved */
         if (g_GPS_READER_Data.gpsInfoMsg.gpsInfo.smask & GPGGA)
         {
-            // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "have gpgga");
+            CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG, "have gpgga");
             nmea_info2GPGGA(&g_GPS_READER_Data.gpsInfoMsg.gpsInfo, &g_GPS_READER_Data.gpsGpggaMsg.gpsGpgga);
             CFE_SB_TimeStampMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpggaMsg);
             CFE_SB_TransmitMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpggaMsg, true);
@@ -92,7 +91,7 @@ CFE_Status_t GPS_READER_RcvMsg(void)
 
         if (g_GPS_READER_Data.gpsInfoMsg.gpsInfo.smask & GPGSA)
         {
-            // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "have gpgsa");
+            CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG, "have gpgsa");
             nmea_info2GPGSA(&g_GPS_READER_Data.gpsInfoMsg.gpsInfo, &g_GPS_READER_Data.gpsGpgsaMsg.gpsGpgsa);
             CFE_SB_TimeStampMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpgsaMsg);
             CFE_SB_TransmitMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpgsaMsg, true);
@@ -100,14 +99,14 @@ CFE_Status_t GPS_READER_RcvMsg(void)
 
         if (g_GPS_READER_Data.gpsInfoMsg.gpsInfo.smask & GPGSV)
         {
-            // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "have gpgsv");
+            CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG, "have gpgsv");
             nmea_info2GPGSV(&g_GPS_READER_Data.gpsInfoMsg.gpsInfo, &g_GPS_READER_Data.gpsGpgsvMsg.gpsGpgsv, 0);
             CFE_SB_TransmitMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpgsvMsg, true);
         }
 
         if (g_GPS_READER_Data.gpsInfoMsg.gpsInfo.smask & GPRMC)
         {
-            // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "have gprmc");
+            CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG, "have gprmc");
             nmea_info2GPRMC(&g_GPS_READER_Data.gpsInfoMsg.gpsInfo, &g_GPS_READER_Data.gpsGprmcMsg.gpsGprmc);
             CFE_SB_TimeStampMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGprmcMsg);
             CFE_SB_TransmitMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGprmcMsg, true);
@@ -115,7 +114,7 @@ CFE_Status_t GPS_READER_RcvMsg(void)
 
         if (g_GPS_READER_Data.gpsInfoMsg.gpsInfo.smask & GPVTG)
         {
-            // CFE_EVS_SendEvent(GPS_READER_INFO_LOGMSG, CFE_EVS_EventType_DEBUG, "have gpvtg");
+            CFE_EVS_SendEvent(GPS_READER_INF_EID, CFE_EVS_EventType_DEBUG, "have gpvtg");
             nmea_info2GPVTG(&g_GPS_READER_Data.gpsInfoMsg.gpsInfo, &g_GPS_READER_Data.gpsGpvtgMsg.gpsGpvtg);
             CFE_SB_TimeStampMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpvtgMsg);
             CFE_SB_TransmitMsg((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpvtgMsg, true);

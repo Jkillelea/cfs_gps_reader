@@ -4,7 +4,7 @@
 #include <termios.h>
 
 #ifdef __arm__ // raspberry pi
-#define SERIAL_PORT_NAME "/dev/ttyS0"
+#define SERIAL_PORT_NAME "/dev/ttyAMA0"
 #else // x86 with usb adaptor
 #define SERIAL_PORT_NAME "/dev/ttyUSB0"
 #endif
