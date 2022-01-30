@@ -2,6 +2,9 @@
 #include "trans_rs422.h"
 #include "gps_reader_platform_cfg.h"
 
+/**
+ * Open the serial port defined by SERIAL_PORT_NAME
+ */
 int32 GPS_READER_OpenPort(const char *const port)
 {
     IO_TransRS422Config_t rs422Config =
