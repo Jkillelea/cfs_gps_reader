@@ -100,7 +100,7 @@ CFE_Status_t GPS_READER_RcvMsg(void)
 
     if (status == CFE_SUCCESS || status == CFE_SB_TIME_OUT)
     {
-        CFE_SB_MsgId_t msgId = 0;
+        CFE_SB_MsgId_t msgId;
         status = CFE_MSG_GetMsgId(&g_GPS_READER_Data.rcvMsgPtr->Msg, &msgId);
         if (status != CFE_SUCCESS)
         {
@@ -140,7 +140,7 @@ CFE_Status_t GPS_READER_Init(void)
     }
 
     /* 1 Hz message for the process tick rate */
-    CFE_SB_Subscribe(GPS_READER_WAKEUP_MID, g_GPS_READER_Data.rcvPipe);
+    CFE_SB_Subscribe(CFE_SB_ValueToMsgId(GPS_READER_WAKEUP_MID), g_GPS_READER_Data.rcvPipe);
     if (status != CFE_SUCCESS)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR, "Failed to subscribe to GPS_READER_WAKEUP_MID");
@@ -148,42 +148,42 @@ CFE_Status_t GPS_READER_Init(void)
     }
 
     /* Messages */
-    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsInfoMsg,  GPS_READER_GPS_INFO_MSG,  sizeof(g_GPS_READER_Data.gpsInfoMsg));
+    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsInfoMsg,  CFE_SB_ValueToMsgId(GPS_READER_GPS_INFO_MSG),  sizeof(g_GPS_READER_Data.gpsInfoMsg));
     if (status != CFE_SUCCESS)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR, "Failed to init message!");
         return status;
     }
 
-    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpggaMsg, GPS_READER_GPS_GPGGA_MSG, sizeof(g_GPS_READER_Data.gpsGpggaMsg));
+    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpggaMsg, CFE_SB_ValueToMsgId(GPS_READER_GPS_GPGGA_MSG), sizeof(g_GPS_READER_Data.gpsGpggaMsg));
     if (status != CFE_SUCCESS)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR, "Failed to init message!");
         return status;
     }
 
-    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpgsaMsg, GPS_READER_GPS_GPGSA_MSG, sizeof(g_GPS_READER_Data.gpsGpgsaMsg));
+    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpgsaMsg, CFE_SB_ValueToMsgId(GPS_READER_GPS_GPGSA_MSG), sizeof(g_GPS_READER_Data.gpsGpgsaMsg));
     if (status != CFE_SUCCESS)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR, "Failed to init message!");
         return status;
     }
 
-    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpgsvMsg, GPS_READER_GPS_GPGSV_MSG, sizeof(g_GPS_READER_Data.gpsGpgsvMsg));
+    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpgsvMsg, CFE_SB_ValueToMsgId(GPS_READER_GPS_GPGSV_MSG), sizeof(g_GPS_READER_Data.gpsGpgsvMsg));
     if (status != CFE_SUCCESS)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR, "Failed to init message!");
         return status;
     }
 
-    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGprmcMsg, GPS_READER_GPS_GPRMC_MSG, sizeof(g_GPS_READER_Data.gpsGprmcMsg));
+    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGprmcMsg, CFE_SB_ValueToMsgId(GPS_READER_GPS_GPRMC_MSG), sizeof(g_GPS_READER_Data.gpsGprmcMsg));
     if (status != CFE_SUCCESS)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR, "Failed to init message!");
         return status;
     }
 
-    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpvtgMsg, GPS_READER_GPS_GPVTG_MSG, sizeof(g_GPS_READER_Data.gpsGpvtgMsg));
+    status = CFE_MSG_Init((CFE_MSG_Message_t *) &g_GPS_READER_Data.gpsGpvtgMsg, CFE_SB_ValueToMsgId(GPS_READER_GPS_GPVTG_MSG), sizeof(g_GPS_READER_Data.gpsGpvtgMsg));
     if (status != CFE_SUCCESS)
     {
         CFE_EVS_SendEvent(GPS_READER_ERROR_LOGMSG, CFE_EVS_EventType_ERROR, "Failed to init message!");
